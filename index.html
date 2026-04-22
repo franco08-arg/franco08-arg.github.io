@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para Mi Personita Especial</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            overflow: hidden;
+            /* Fondo con un degradado animado muy suave */
+            background: linear-gradient(45deg, #000000, #1a0005, #000000);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            font-family: 'Arial', sans-serif;
+            cursor: pointer;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #fondo-animado {
+            position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 1;
+        }
+
+        .elemento-flotante {
+            position: absolute;
+            user-select: none;
+            white-space: nowrap;
+            will-change: transform;
+            transition: opacity 1s;
+        }
+
+        .te-amo { color: #ff4d6d; font-weight: bold; text-shadow: 0 0 8px rgba(255, 77, 109, 0.4); }
+        .corazon { color: #ff0000; filter: drop-shadow(0 0 5px rgba(255,0,0,0.5)); }
+
+        /* Estilo de las fotos */
+        .foto-click {
+            position: absolute;
+            max-width: 200px; max-height: 200px;
+            border: 6px solid white;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+            border-radius: 12px;
+            z-index: 100;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(0) rotate(-10deg);
+            animation: aparecerFoto 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Partículas de corazones al hacer click */
+        .particula {
+            position: absolute;
+            z-index: 150;
+            pointer-events: none;
+            font-size: 1.5rem;
+            animation: explotar 1s ease-out forwards;
+        }
+
+        @keyframes aparecerFoto {
+            to { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+        }
+
+        @keyframes explotar {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; }
+        }
+
+        #instruccion {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%; text-align: center;
+            color: white; z-index: 200;
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px #ff4d6d;
+            animation: latido 1.5s infinite;
+        }
+
+        @keyframes latido {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+    </style>
+</head>
+<body onclick="manejarClick(event)">
+
+    <div id="instruccion">Toca la pantalla mi amor ❤️</div>
+    <div id="fondo-animado"></div>
+    
+    <audio id="musica-fondo" loop>
+        <source src="cancion.mp3.mpeg" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const cantidadElementos = 60; 
+        const frases = ['Te amo', 'Eres mi vida', '❤️', 'Siempre juntos', 'Mi mundo', 'Te adoro'];
+        
+        const imagenesUrls = [
+            'https://cdn.discordapp.com/attachments/1496337108053397566/1496342114659864657/IMG-20240316-WA0063.jpg?ex=69e988b0&is=69e83730&hm=331ed55e45189c140ee811cf268092cc38e8c8fc850068e1fa4c3b47ebb40661',
+            'https://cdn.discordapp.com/attachments/1496337108053397566/1496342114265727096/IMG-20240406-WA0017.jpg?ex=69e988b0&is=69e83730&hm=ab1361a7025aef1ae8130aade044bf2c4e02f3c3b0c213c44ae9cf87519f434c',
+            'https://cdn.discordapp.com/attachments/1496337108053397566/1496348086174486609/IMG_20251206_201251.jpg?ex=69e98e40&is=69e83cc0&hm=e5b159468747e60ccb282f928ac6fee276b51330b7418c53069e6d633581fece',
+            'https://cdn.discordapp.com/attachments/1496337108053397566/1496348086480539799/b7530fc0504e404584c2bdd966f20c08.webp?ex=69e98e40&is=69e83cc0&hm=edb541a6d4c08687139f7eeca1585043102416871c273f4848a339d5ca1082b7',
+            'https://cdn.discordapp.com/attachments/1496337108053397566/1496349029309612202/8098eedd85572cb39873aafb3c2f70e0_0.webp?ex=69e98f21&is=69e83da1&hm=235068648df5e2cffc592732ba657dcafa2117efe796c44448682eb32c95f52a'
+        ];
+        
+        const container = document.getElementById('fondo-animado');
+        const musica = document.getElementById('musica-fondo');
+        const instruccion = document.getElementById('instruccion');
+        let musicaIniciada = false;
+
+        // Crear ambiente inicial
+        for (let i = 0; i < cantidadElementos; i++) {
+            const textoAleatorio = frases[Math.floor(Math.random() * frases.length)];
+            crearElementoFlotante(textoAleatorio);
+        }
+
+        function crearElementoFlotante(texto) {
+            const el = document.createElement('span');
+            el.innerText = texto;
+            el.className = 'elemento-flotante ' + (texto === '❤️' ? 'corazon' : 'te-amo');
+            
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.top = Math.random() * 100 + 'vh';
+            el.style.fontSize = (Math.random() * 1.5 + 0.8) + 'rem';
+            el.style.opacity = Math.random() * 0.6 + 0.2;
+            
+            container.appendChild(el);
+            animarConstante(el);
+        }
+
+        function animarConstante(el) {
+            const duration = Math.random() * 10000 + 10000;
+            const x = (Math.random() - 0.5) * 500;
+            const y = (Math.random() - 0.5) * 500;
+
+            el.animate([
+                { transform: 'translate(0, 0)' },
+                { transform: `translate(${x}px, ${y}px)` }
+            ], {
+                duration: duration,
+                iterations: Infinity,
+                direction: 'alternate',
+                easing: 'ease-in-out'
+            });
+        }
+
+        function crearParticula(x, y) {
+            for(let i=0; i<6; i++) {
+                const p = document.createElement('span');
+                p.innerText = '❤️';
+                p.className = 'particula';
+                p.style.left = x + 'px';
+                p.style.top = y + 'px';
+                p.style.setProperty('--x', (Math.random() - 0.5) * 200 + 'px');
+                p.style.setProperty('--y', (Math.random() - 0.5) * 200 + 'px');
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 1000);
+            }
+        }
+
+        function manejarClick(event) {
+            if (!musicaIniciada) {
+                musica.play().catch(() => {
+                    console.log("Error: Asegúrate de que el archivo audio.mp3 esté en la carpeta.");
+                });
+                musicaIniciada = true;
+                instruccion.style.opacity = '0';
+                setTimeout(() => instruccion.remove(), 1000);
+            }
+
+            // Efecto de explosión de corazones
+            crearParticula(event.clientX, event.clientY);
+
+            // Crear foto
+            const img = document.createElement('img');
+            img.src = imagenesUrls[Math.floor(Math.random() * imagenesUrls.length)];
+            img.className = 'foto-click';
+            img.style.left = event.clientX + 'px';
+            img.style.top = event.clientY + 'px';
+            
+            document.body.appendChild(img);
+
+            setTimeout(() => {
+                img.style.transition = 'all 1s';
+                img.style.opacity = '0';
+                img.style.transform = 'translate(-50%, -50%) scale(0) rotate(20deg)';
+                setTimeout(() => img.remove(), 1000);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
